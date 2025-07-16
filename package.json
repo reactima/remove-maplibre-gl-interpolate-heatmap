@@ -11,7 +11,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "maplibre-gl": "^2.4.0",
     "maplibre-gl-interpolate-heatmap": "^0.0.1",
