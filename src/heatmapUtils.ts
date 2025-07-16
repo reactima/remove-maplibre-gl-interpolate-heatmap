@@ -27,6 +27,8 @@ export function createSmartInterpolatedHeatmap(dataset: FootTrafficWithTimeSerie
     framebufferFactor = 0.5
   }
 
+  console.log('Heatmap parameters:', {  p, framebufferFactor, minValue, maxValue, avg, avgRatio });
+
   return new MaplibreInterpolateHeatmapLayer({
     data,
     id: 'foot-traffic-heatmap',
