@@ -1,6 +1,8 @@
 import earcut from 'earcut';
 import maplibregl, { CustomLayerInterface } from 'maplibre-gl';
 
+const debug = true;
+
 type MaplibreInterpolateHeatmapLayerOptions = {
   id: string;
   data: { lat: number; lon: number; val: number }[];
@@ -56,6 +58,7 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
   uXi: WebGLUniformLocation | null = null;
 
   constructor(options: MaplibreInterpolateHeatmapLayerOptions) {
+    if (debug) console.log('MaplibreInterpolateHeatmapLayer:constructor', options);
     this.id = options.id || '';
     this.data = options.data || [];
     this.aoi = options.aoi || [];
@@ -86,6 +89,7 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     map: maplibregl.Map,
     gl: WebGLRenderingContext | WebGL2RenderingContext,
   ): void {
+    if (debug) console.log('MaplibreInterpolateHeatmapLayer:onAdd');
     const isWebGL2 =
       typeof WebGL2RenderingContext !== 'undefined' &&
       gl instanceof WebGL2RenderingContext;
@@ -102,6 +106,7 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     if (isWebGL2 && !gl.getExtension('EXT_color_buffer_float')) {
       throw new Error('EXT_color_buffer_float not supported');
     }
+    if (debug) console.log('WebGL extensions validated');
     this.canvas = map.getCanvas();
     const vertexSource = `
               precision highp float;
@@ -157,12 +162,14 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     );
     if (!computationVertexShader)
       throw new Error('error: computation vertex shader not created');
+    if (debug) console.log('Computation vertex shader created');
     const computationFragmentShader = createFragmentShader(
       gl,
       computationFragmentSource,
     );
     if (!computationFragmentShader)
       throw new Error('error: computation fragment shader not created');
+    if (debug) console.log('Computation fragment shader created');
     this.computationProgram = createProgram(
       gl,
       computationVertexShader,
@@ -170,6 +177,7 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     );
     if (!this.computationProgram)
       throw new Error('error: computation fragment shader not created');
+    if (debug) console.log('Computation program linked');
     this.aPositionComputation = gl.getAttribLocation(
       this.computationProgram,
       'a_Position',
@@ -198,9 +206,11 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     const drawingVertexShader = createVertexShader(gl, vertexSource);
     if (!drawingVertexShader)
       throw new Error('error: drawing vertex shader not created');
+    if (debug) console.log('Drawing vertex shader created');
     const drawingFragmentShader = createFragmentShader(gl, fragmentSource);
     if (!drawingFragmentShader)
       throw new Error('error: drawing fragment shader not created');
+    if (debug) console.log('Drawing fragment shader created');
     this.drawProgram = createProgram(
       gl,
       drawingVertexShader,
@@ -208,6 +218,7 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     );
     if (!this.drawProgram)
       throw new Error('error: drawing program not created');
+    if (debug) console.log('Drawing program linked');
     this.aPositionDraw = gl.getAttribLocation(this.drawProgram, 'a_Position');
     this.uMatrixDraw = gl.getUniformLocation(this.drawProgram, 'u_Matrix');
     this.uComputationTexture = gl.getUniformLocation(
@@ -304,7 +315,10 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     let maxValue = -Infinity;
     this.data.forEach((rawPoint) => {
       const mercatorCoordinates =
-        maplibregl.MercatorCoordinate.fromLngLat(rawPoint);
+        maplibregl.MercatorCoordinate.fromLngLat({
+          lng: rawPoint.lon,
+          lat: rawPoint.lat,
+        });
       this.points.push([
         mercatorCoordinates.x,
         mercatorCoordinates.y,
@@ -317,6 +331,7 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
         maxValue = rawPoint.val;
       }
     });
+    if (debug) console.log('Points processed', this.points.length);
     minValue = minValue < this.minValue ? minValue : this.minValue;
     maxValue = maxValue > this.maxValue ? maxValue : this.maxValue;
     this.points.forEach((point) => {
@@ -343,13 +358,16 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
         gl.FLOAT,
         null,
       );
+      if (debug) console.log('Framebuffer resized', this.framebufferWidth, this.framebufferHeight);
     };
     map.on('resize', this.resizeFramebuffer);
+    if (debug) console.log('Resize handler attached');
   }
   onRemove(
     map: maplibregl.Map,
     gl: WebGLRenderingContext | WebGL2RenderingContext,
   ): void {
+    if (debug) console.log('MaplibreInterpolateHeatmapLayer:onRemove');
     if (!this.resizeFramebuffer)
       throw new Error('error: required resize frame buffer callback');
     map.off('resize', this.resizeFramebuffer);
@@ -363,6 +381,7 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     gl: WebGLRenderingContext | WebGL2RenderingContext,
     { projectionMatrix }: maplibregl.CustomRenderMethodInput,
   ): void {
+    if (debug) console.log('MaplibreInterpolateHeatmapLayer:prerender');
     if (
       !this.framebufferWidth ||
       !this.framebufferHeight ||
@@ -394,6 +413,7 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     for (let i = 0; i < this.points.length; i += 1) {
       const point = this.points.at(i);
       if (!point) throw new Error(`error: point not found at index: ${i}`);
+      if (debug) console.log('Prerender point', i, point);
       gl.uniform1f(this.uUi, point[2]);
       gl.uniform2f(this.uXi, point[0], point[1]);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.computationVerticesBuffer);
@@ -414,11 +434,13 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+    if (debug) console.log('Prerender finished');
   }
   render(
     gl: WebGLRenderingContext | WebGL2RenderingContext,
     { projectionMatrix }: maplibregl.CustomRenderMethodInput,
   ): void {
+    if (debug) console.log('MaplibreInterpolateHeatmapLayer:render');
     if (
       this.aPositionDraw === undefined ||
       !this.canvas ||
@@ -441,6 +463,7 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
     gl.drawElements(gl.TRIANGLES, this.indicesNumber, gl.UNSIGNED_BYTE, 0);
+    if (debug) console.log('Render finished');
   }
 }
 /**
