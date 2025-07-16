@@ -1,6 +1,5 @@
 import earcut from 'earcut';
 import maplibregl, { CustomLayerInterface } from 'maplibre-gl';
-import type { mat4 } from 'gl-matrix';
 
 type MaplibreInterpolateHeatmapLayerOptions = {
   id: string;
@@ -83,7 +82,10 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     this.textureCoverSameAreaAsROI = this.framebufferFactor === 1;
   }
 
-  onAdd(map: maplibregl.Map, gl: WebGLRenderingContext): void {
+  onAdd(
+    map: maplibregl.Map,
+    gl: WebGLRenderingContext | WebGL2RenderingContext,
+  ): void {
     if (
       !gl.getExtension('OES_texture_float') ||
       !gl.getExtension('WEBGL_color_buffer_float') ||
@@ -335,7 +337,10 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     };
     map.on('resize', this.resizeFramebuffer);
   }
-  onRemove(map: maplibregl.Map, gl: WebGLRenderingContext): void {
+  onRemove(
+    map: maplibregl.Map,
+    gl: WebGLRenderingContext | WebGL2RenderingContext,
+  ): void {
     if (!this.resizeFramebuffer)
       throw new Error('error: required resize frame buffer callback');
     map.off('resize', this.resizeFramebuffer);
@@ -345,7 +350,10 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     gl.deleteBuffer(this.indicesBuffer);
     gl.deleteFramebuffer(this.computationFramebuffer);
   }
-  prerender(gl: WebGLRenderingContext, matrix: mat4): void {
+  prerender(
+    gl: WebGLRenderingContext | WebGL2RenderingContext,
+    { projectionMatrix }: maplibregl.CustomRenderMethodInput,
+  ): void {
     if (
       !this.framebufferWidth ||
       !this.framebufferHeight ||
@@ -363,7 +371,7 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     gl.blendFunc(gl.ONE, gl.ONE);
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.useProgram(this.computationProgram);
-    gl.uniformMatrix4fv(this.uMatrixComputation, false, matrix);
+    gl.uniformMatrix4fv(this.uMatrixComputation, false, projectionMatrix);
     gl.uniform1f(this.uP, this.p);
     gl.uniform2f(
       this.uFramebufferSize,
@@ -398,7 +406,10 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
   }
-  render(gl: WebGLRenderingContext, matrix: mat4): void {
+  render(
+    gl: WebGLRenderingContext | WebGL2RenderingContext,
+    { projectionMatrix }: maplibregl.CustomRenderMethodInput,
+  ): void {
     if (
       this.aPositionDraw === undefined ||
       !this.canvas ||
@@ -412,7 +423,7 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.drawingVerticesBuffer);
     gl.enableVertexAttribArray(this.aPositionDraw);
     gl.vertexAttribPointer(this.aPositionDraw, 2, gl.FLOAT, false, 0, 0);
-    gl.uniformMatrix4fv(this.uMatrixDraw, false, matrix);
+    gl.uniformMatrix4fv(this.uMatrixDraw, false, projectionMatrix);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.computationTexture);
     gl.uniform1i(this.uComputationTexture, 0);
