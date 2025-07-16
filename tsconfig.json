@@ -17,5 +17,6 @@
     "paths": {
       "maplibre-gl-interpolate-heatmap": ["./src/packages/maplibre-gl-interpolate-heatmap"]
     }
-  }
+  },
+  "include": ["src"]
 }

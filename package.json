@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "node vite-dev.mjs",
+    "build": "node vite-dev.mjs build",
+    "preview": "node vite-dev.mjs preview"
   },
   "keywords": [],
   "author": "",
