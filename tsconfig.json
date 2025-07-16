@@ -15,7 +15,9 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "maplibre-gl-interpolate-heatmap": ["./src/packages/maplibre-gl-interpolate-heatmap"]
+      "maplibre-gl-interpolate-heatmap": [
+        "./src/packages/maplibre-gl-interpolate-heatmap"
+      ]
     }
   },
   "include": ["src"]

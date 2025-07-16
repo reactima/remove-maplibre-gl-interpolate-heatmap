@@ -1,1 +1,1 @@
-declare module 'earcut';
+declare module 'earcut'

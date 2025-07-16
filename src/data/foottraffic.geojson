@@ -5,10 +5,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9804147,
-          40.7568769
-        ]
+        "coordinates": [-73.9804147, 40.7568769]
       },
       "properties": {
         "venue_id": "ven_4955396833374d64655f56526b6f775a4a3831434b61334a496843",
@@ -120,10 +117,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9761481,
-          40.7650085
-        ]
+        "coordinates": [-73.9761481, 40.7650085]
       },
       "properties": {
         "venue_id": "ven_6363546a75744563314a62526b6f77594250736a75386f4a496843",
@@ -235,10 +229,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9806295,
-          40.7617296
-        ]
+        "coordinates": [-73.9806295, 40.7617296]
       },
       "properties": {
         "venue_id": "ven_51726d596b3936746e4e59526b6f77596c6648435538454a496843",
@@ -350,10 +341,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9824801,
-          40.7646749
-        ]
+        "coordinates": [-73.9824801, 40.7646749]
       },
       "properties": {
         "venue_id": "ven_454830547138456557774c526b6f7759687641757757384a496843",
@@ -465,10 +453,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9783169,
-          40.7596586
-        ]
+        "coordinates": [-73.9783169, 40.7596586]
       },
       "properties": {
         "venue_id": "ven_6f4475334c797838735644526b6f77596c5f53576435354a496843",
@@ -580,10 +565,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.980065,
-          40.765917
-        ]
+        "coordinates": [-73.980065, 40.765917]
       },
       "properties": {
         "venue_id": "ven_302d4c2d6f756671397162526b6f775964766e6e3138444a496843",
@@ -695,10 +677,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9778488,
-          40.7594208
-        ]
+        "coordinates": [-73.9778488, 40.7594208]
       },
       "properties": {
         "venue_id": "ven_774d63635a5a4465617741526b6f77593550725568534a4a496843",
@@ -810,10 +789,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.977277,
-          40.762523
-        ]
+        "coordinates": [-73.977277, 40.762523]
       },
       "properties": {
         "venue_id": "ven_6f4d4d585279554f413278526b6f77596c6669713739334a496843",
@@ -925,10 +901,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9730857,
-          40.7602436
-        ]
+        "coordinates": [-73.9730857, 40.7602436]
       },
       "properties": {
         "venue_id": "ven_67566f6d326f7861796a31526b6f7759746645554257554a496843",
@@ -1040,10 +1013,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.967746,
-          40.7565088
-        ]
+        "coordinates": [-73.967746, 40.7565088]
       },
       "properties": {
         "venue_id": "ven_3871734a5951735a696b44526b6f77594e6576707179354a496843",
@@ -1155,10 +1125,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.972321,
-          40.75692
-        ]
+        "coordinates": [-73.972321, 40.75692]
       },
       "properties": {
         "venue_id": "ven_3079662d546244462d5178526b6f7759787678634f32414a496843",
@@ -1270,10 +1237,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9772179,
-          40.7633899
-        ]
+        "coordinates": [-73.9772179, 40.7633899]
       },
       "properties": {
         "venue_id": "ven_736376316c503154743037526b6f775a567a666947645f4a496843",
@@ -1385,10 +1349,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9743251,
-          40.7646318
-        ]
+        "coordinates": [-73.9743251, 40.7646318]
       },
       "properties": {
         "venue_id": "ven_7362742d535f435f437743526b6f7759426666645661594a496843",
@@ -1500,10 +1461,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9745136,
-          40.7588164
-        ]
+        "coordinates": [-73.9745136, 40.7588164]
       },
       "properties": {
         "venue_id": "ven_6f4746656c4f745a686662526b6f77597450674b4b304d4a496843",
@@ -1615,10 +1573,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9695887,
-          40.7595637
-        ]
+        "coordinates": [-73.9695887, 40.7595637]
       },
       "properties": {
         "venue_id": "ven_6b697a62666d7a70647342526b6f7759527536465a38494a496843",
@@ -1730,10 +1685,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9766124,
-          40.757213
-        ]
+        "coordinates": [-73.9766124, 40.757213]
       },
       "properties": {
         "venue_id": "ven_773049587945754c736551526b6f775a6c36475667356a4a496843",
@@ -1845,10 +1797,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.971269,
-          40.757499
-        ]
+        "coordinates": [-73.971269, 40.757499]
       },
       "properties": {
         "venue_id": "ven_6f70506c7462515a744e7a526b6f7759785f734d7078414a496843",
@@ -1960,10 +1909,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9743901,
-          40.761289
-        ]
+        "coordinates": [-73.9743901, 40.761289]
       },
       "properties": {
         "venue_id": "ven_6b5a4b7356466763574876526b6f7759707655616b5f544a496843",
@@ -2075,10 +2021,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.975883,
-          40.763953
-        ]
+        "coordinates": [-73.975883, 40.763953]
       },
       "properties": {
         "venue_id": "ven_6f42664e4367474e586f66526b6f7759705f434c5454444a496843",
@@ -2190,10 +2133,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9687092,
-          40.763048
-        ]
+        "coordinates": [-73.9687092, 40.763048]
       },
       "properties": {
         "venue_id": "ven_34594338627a494d397137526b6f7759706570564465594a496843",
@@ -2305,10 +2245,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9778033,
-          40.7638714
-        ]
+        "coordinates": [-73.9778033, 40.7638714]
       },
       "properties": {
         "venue_id": "ven_772d336856733651774c38526b6f77596c5f2d465639714a496843",
@@ -2420,10 +2357,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9771957,
-          40.7627908
-        ]
+        "coordinates": [-73.9771957, 40.7627908]
       },
       "properties": {
         "venue_id": "ven_55314c5661304f4f624d49526b6f77596c5f69576551754a496843",
@@ -2535,10 +2469,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9782105,
-          40.7635478
-        ]
+        "coordinates": [-73.9782105, 40.7635478]
       },
       "properties": {
         "venue_id": "ven_67675a7462564851635474526b6f775a78366e484356534a496843",
@@ -2650,10 +2581,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9685117,
-          40.7584934
-        ]
+        "coordinates": [-73.9685117, 40.7584934]
       },
       "properties": {
         "venue_id": "ven_382d4b6a6b6e314b617251526b6f7759524f69736157684a496843",
@@ -2765,10 +2693,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9663627,
-          40.7583166
-        ]
+        "coordinates": [-73.9663627, 40.7583166]
       },
       "properties": {
         "venue_id": "ven_51355a6c5f716355644839526b6f7759522d44547177454a496843",
@@ -2880,10 +2805,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9692216,
-          40.7657388
-        ]
+        "coordinates": [-73.9692216, 40.7657388]
       },
       "properties": {
         "venue_id": "ven_4549494f6c326c47746539526b6f77593565544c4832634a496843",
@@ -2995,10 +2917,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9793365,
-          40.7612382
-        ]
+        "coordinates": [-73.9793365, 40.7612382]
       },
       "properties": {
         "venue_id": "ven_595463556246504b707155526b6f775a746535443759764a496843",
@@ -3110,10 +3029,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.978108,
-          40.755436
-        ]
+        "coordinates": [-73.978108, 40.755436]
       },
       "properties": {
         "venue_id": "ven_45396f6d3063415075427a526b6f775a395836444b77734a496843",
@@ -3225,10 +3141,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9780648,
-          40.7591792
-        ]
+        "coordinates": [-73.9780648, 40.7591792]
       },
       "properties": {
         "venue_id": "ven_495047556f413054696a62526b6f77593566724663644b4a496843",
@@ -3340,10 +3253,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9806712,
-          40.7661038
-        ]
+        "coordinates": [-73.9806712, 40.7661038]
       },
       "properties": {
         "venue_id": "ven_5177505636325849646431526b6f775964766f6669664c4a496843",
@@ -3455,10 +3365,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.982143,
-          40.7659979
-        ]
+        "coordinates": [-73.982143, 40.7659979]
       },
       "properties": {
         "venue_id": "ven_73703673496d4c2d6b3543526b6f77596466366d5334694a496843",
@@ -3570,10 +3477,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9719444,
-          40.7644444
-        ]
+        "coordinates": [-73.9719444, 40.7644444]
       },
       "properties": {
         "venue_id": "ven_73594a6d39765759696f34526b6f7759425f46674f306c4a496843",
@@ -3685,10 +3589,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9820097,
-          40.7568882
-        ]
+        "coordinates": [-73.9820097, 40.7568882]
       },
       "properties": {
         "venue_id": "ven_4948426874496b44625879526b6f775a31644e746866734a496843",
@@ -3800,10 +3701,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.979061,
-          40.759003
-        ]
+        "coordinates": [-73.979061, 40.759003]
       },
       "properties": {
         "venue_id": "ven_413142527a3962514a4b35526b6f775a4a4465705331734a496843",
@@ -3915,10 +3813,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9819312,
-          40.763258
-        ]
+        "coordinates": [-73.9819312, 40.763258]
       },
       "properties": {
         "venue_id": "ven_417068636571413859382d526b6f775a4a46666c345a4c4a496843",
@@ -4030,10 +3925,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9820503,
-          40.7607041
-        ]
+        "coordinates": [-73.9820503, 40.7607041]
       },
       "properties": {
         "venue_id": "ven_495848436569796f633452526b6f775a7474397056622d4a496843",
@@ -4145,10 +4037,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9804146,
-          40.7579954
-        ]
+        "coordinates": [-73.9804146, 40.7579954]
       },
       "properties": {
         "venue_id": "ven_6f306632376f37706a776f526b6f775a5a5474347666424a496843",
@@ -4260,10 +4149,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9758633,
-          40.7647538
-        ]
+        "coordinates": [-73.9758633, 40.7647538]
       },
       "properties": {
         "venue_id": "ven_59625079694b4369734644526b6f7759425076446559724a496843",
@@ -4375,10 +4261,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9680655,
-          40.7599783
-        ]
+        "coordinates": [-73.9680655, 40.7599783]
       },
       "properties": {
         "venue_id": "ven_517a5463306c6e46774f47526b6f775a564354616d334c4a496843",
@@ -4490,10 +4373,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9753786,
-          40.7597568
-        ]
+        "coordinates": [-73.9753786, 40.7597568]
       },
       "properties": {
         "venue_id": "ven_4d743936486467545a6f4c526b6f775974766c707964704a496843",
@@ -4605,10 +4485,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9694089,
-          40.7558439
-        ]
+        "coordinates": [-73.9694089, 40.7558439]
       },
       "properties": {
         "venue_id": "ven_45484c416c322d7a425830526b6f77594e4f486b6f624f4a496843",
@@ -4720,10 +4597,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.977895,
-          40.7648784
-        ]
+        "coordinates": [-73.977895, 40.7648784]
       },
       "properties": {
         "venue_id": "ven_556b76586a764867626b79526b6f77596450556f63645a4a496843",
@@ -4835,10 +4709,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9668379,
-          40.7644291
-        ]
+        "coordinates": [-73.9668379, 40.7644291]
       },
       "properties": {
         "venue_id": "ven_34305935514a655736625f526b6f775a685544373036614a496843",
@@ -4950,10 +4821,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9805131,
-          40.756083
-        ]
+        "coordinates": [-73.9805131, 40.756083]
       },
       "properties": {
         "venue_id": "ven_77794d746a4d4144666136526b6f775a7479326f6437494a496843",
@@ -5065,10 +4933,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9693088,
-          40.7558445
-        ]
+        "coordinates": [-73.9693088, 40.7558445]
       },
       "properties": {
         "venue_id": "ven_736172437978755a587949526b6f775a52495934435a474a496843",
@@ -5180,10 +5045,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9753353,
-          40.764621
-        ]
+        "coordinates": [-73.9753353, 40.764621]
       },
       "properties": {
         "venue_id": "ven_454d352d706c4b5a596c64526b6f775a567979633955614a496843",
@@ -5295,10 +5157,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9805065,
-          40.7577383
-        ]
+        "coordinates": [-73.9805065, 40.7577383]
       },
       "properties": {
         "venue_id": "ven_45635633785f366a504c38526b6f775a56766e586134734a496843",
@@ -5410,10 +5269,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9785597,
-          40.764215
-        ]
+        "coordinates": [-73.9785597, 40.764215]
       },
       "properties": {
         "venue_id": "ven_3861355245335a6b383750526b6f77596c6634624666774a496843",
@@ -5525,10 +5381,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9817558,
-          40.7614218
-        ]
+        "coordinates": [-73.9817558, 40.7614218]
       },
       "properties": {
         "venue_id": "ven_554753707a353136347861526b6f775a646b36515137564a496843",
@@ -5640,10 +5493,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.976704,
-          40.762546
-        ]
+        "coordinates": [-73.976704, 40.762546]
       },
       "properties": {
         "venue_id": "ven_6355477164685553465437526b6f775970764a7136625f4a496843",
@@ -5755,10 +5605,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9562491,
-          40.8028497
-        ]
+        "coordinates": [-73.9562491, 40.8028497]
       },
       "properties": {
         "venue_id": "ven_4534366b77434e426c4234526b6f77336e62644f5862794a496843",
@@ -5870,10 +5717,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9565498,
-          40.8025144
-        ]
+        "coordinates": [-73.9565498, 40.8025144]
       },
       "properties": {
         "venue_id": "ven_386f546b49595077597450526b6f77326678704a6179784a496843",
@@ -5985,10 +5829,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9490853,
-          40.7973853
-        ]
+        "coordinates": [-73.9490853, 40.7973853]
       },
       "properties": {
         "venue_id": "ven_5537337a736e6956796249526b6f7732726833493451654a496843",
@@ -6100,10 +5941,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9593061,
-          40.8044
-        ]
+        "coordinates": [-73.9593061, 40.8044]
       },
       "properties": {
         "venue_id": "ven_49777332756d3530736471526b6f773262684a697a57664a496843",
@@ -6215,10 +6053,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9492652,
-          40.7975365
-        ]
+        "coordinates": [-73.9492652, 40.7975365]
       },
       "properties": {
         "venue_id": "ven_30615449385035346d3873526b6f77327252336d7a54734a496843",
@@ -6330,10 +6165,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9483469,
-          40.8044561
-        ]
+        "coordinates": [-73.9483469, 40.8044561]
       },
       "properties": {
         "venue_id": "ven_5149584e6b423237664c6b526b6f773248785f7a7356564a496843",
@@ -6445,10 +6277,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9590018,
-          40.8039906
-        ]
+        "coordinates": [-73.9590018, 40.8039906]
       },
       "properties": {
         "venue_id": "ven_416955546f45354d644441526b6f773262684c693331314a496843",
@@ -6560,10 +6389,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.955789,
-          40.803328
-        ]
+        "coordinates": [-73.955789, 40.803328]
       },
       "properties": {
         "venue_id": "ven_306e5750724b7250654d43526b6f77326278344f31635f4a496843",
@@ -6675,10 +6501,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9524875,
-          40.8038457
-        ]
+        "coordinates": [-73.9524875, 40.8038457]
       },
       "properties": {
         "venue_id": "ven_4974343334764a75535847526b6f773248784e4f49346a4a496843",
@@ -6790,10 +6613,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.958024,
-          40.8036819
-        ]
+        "coordinates": [-73.958024, 40.8036819]
       },
       "properties": {
         "venue_id": "ven_556c504a7a346870547246526b6f77326268534859565a4a496843",
@@ -6905,10 +6725,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9590845,
-          40.8060009
-        ]
+        "coordinates": [-73.9590845, 40.8060009]
       },
       "properties": {
         "venue_id": "ven_51456b3261585634735f48526b6f77333333324f6c556a4a496843",
@@ -7020,10 +6837,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9627312,
-          40.7989929
-        ]
+        "coordinates": [-73.9627312, 40.7989929]
       },
       "properties": {
         "venue_id": "ven_3071335f46764d7930594c526b6f7733724d562d7357434a496843",
@@ -7135,10 +6949,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9475777,
-          40.8043177
-        ]
+        "coordinates": [-73.9475777, 40.8043177]
       },
       "properties": {
         "venue_id": "ven_7356316d747a304b434866526b6f77323741414f4357734a496843",
@@ -7250,10 +7061,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9483333,
-          40.8043667
-        ]
+        "coordinates": [-73.9483333, 40.8043667]
       },
       "properties": {
         "venue_id": "ven_677249786f463973663737526b6f773248422d555a516d4a496843",
@@ -7365,10 +7173,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9618424,
-          40.801047
-        ]
+        "coordinates": [-73.9618424, 40.801047]
       },
       "properties": {
         "venue_id": "ven_7369557952534e526d7557526b6f77324c5330715077354a496843",
@@ -7480,10 +7285,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9589429,
-          40.7968924
-        ]
+        "coordinates": [-73.9589429, 40.7968924]
       },
       "properties": {
         "venue_id": "ven_4569796d63766d74793664526b6f77324c6942354c576c4a496843",
@@ -7595,10 +7397,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.94763,
-          40.801351
-        ]
+        "coordinates": [-73.94763, 40.801351]
       },
       "properties": {
         "venue_id": "ven_38635250474a64376d7844526b6f773244784a717656304a496843",
@@ -7710,10 +7509,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.949046,
-          40.8023197
-        ]
+        "coordinates": [-73.949046, 40.8023197]
       },
       "properties": {
         "venue_id": "ven_6371745948717a6d684d75526b6f77324868796a3556524a496843",
@@ -7825,10 +7621,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9494167,
-          40.7968889
-        ]
+        "coordinates": [-73.9494167, 40.7968889]
       },
       "properties": {
         "venue_id": "ven_774f787077716d4863474b526b6f7732764247574463464a496843",
@@ -7940,10 +7733,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9625574,
-          40.7993077
-        ]
+        "coordinates": [-73.9625574, 40.7993077]
       },
       "properties": {
         "venue_id": "ven_4165533634515645556d4c526b6f7732505341526a38414a496843",
@@ -8055,10 +7845,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9623322,
-          40.7995303
-        ]
+        "coordinates": [-73.9623322, 40.7995303]
       },
       "properties": {
         "venue_id": "ven_4958534657476939675754526b6f77324c53334531625f4a496843",
@@ -8170,10 +7957,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9515969,
-          40.7975283
-        ]
+        "coordinates": [-73.9515969, 40.7975283]
       },
       "properties": {
         "venue_id": "ven_3873484135445039455570526b6f773272425442377a544a496843",
@@ -8285,10 +8069,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9618377,
-          40.8003033
-        ]
+        "coordinates": [-73.9618377, 40.8003033]
       },
       "properties": {
         "venue_id": "ven_6378487451784236747533526b6f77336e624e314f5f6d4a496843",
@@ -8400,10 +8181,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9463378,
-          40.8004397
-        ]
+        "coordinates": [-73.9463378, 40.8004397]
       },
       "properties": {
         "venue_id": "ven_6748752d4d4564475f735a526b6f7733546b4d636d312d4a496843",
@@ -8515,10 +8293,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9472158,
-          40.7963698
-        ]
+        "coordinates": [-73.9472158, 40.7963698]
       },
       "properties": {
         "venue_id": "ven_416c744d63423970375f54526b6f7733446e49416f5a784a496843",
@@ -8630,10 +8405,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9519676,
-          40.8045367
-        ]
+        "coordinates": [-73.9519676, 40.8045367]
       },
       "properties": {
         "venue_id": "ven_306578786b367347733130526b6f773358335648745a714a496843",
@@ -8745,10 +8517,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9580539,
-          40.8036273
-        ]
+        "coordinates": [-73.9580539, 40.8036273]
       },
       "properties": {
         "venue_id": "ven_4971794f44516e4146454a526b6f77336a7478337077474a496843",
@@ -8860,10 +8629,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9624662,
-          40.7994716
-        ]
+        "coordinates": [-73.9624662, 40.7994716]
       },
       "properties": {
         "venue_id": "ven_6b43544259774d4e324d6c526b6f7732506941784a78724a496843",
@@ -8975,10 +8741,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9542852,
-          40.8041473
-        ]
+        "coordinates": [-73.9542852, 40.8041473]
       },
       "properties": {
         "venue_id": "ven_6354343078544556386c68526b6f77326278744959594a4a496843",
@@ -9090,10 +8853,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9540571,
-          40.805737
-        ]
+        "coordinates": [-73.9540571, 40.805737]
       },
       "properties": {
         "venue_id": "ven_51704c4656666246396c5f526b6f77325442424f4638494a496843",
@@ -9205,10 +8965,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9502298,
-          40.8017227
-        ]
+        "coordinates": [-73.9502298, 40.8017227]
       },
       "properties": {
         "venue_id": "ven_596f506538365977796b42526b6f7733374c5f745554484a496843",
@@ -9320,10 +9077,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9519871,
-          40.7994444
-        ]
+        "coordinates": [-73.9519871, 40.7994444]
       },
       "properties": {
         "venue_id": "ven_496b667434734d63565734526b6f7732725263646638674a496843",
@@ -9435,10 +9189,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9610072,
-          40.8065685
-        ]
+        "coordinates": [-73.9610072, 40.8065685]
       },
       "properties": {
         "venue_id": "ven_4937336a78627867656e4f526b6f77323744647653575f4a496843",
@@ -9550,10 +9301,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9561413,
-          40.7977826
-        ]
+        "coordinates": [-73.9561413, 40.7977826]
       },
       "properties": {
         "venue_id": "ven_674a5830354e5572664339526b6f77326e42436652575f4a496843",
@@ -9665,10 +9413,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9534853,
-          40.8034836
-        ]
+        "coordinates": [-73.9534853, 40.8034836]
       },
       "properties": {
         "venue_id": "ven_4d534767433241534e4135526b6f773248524c685656564a496843",
@@ -9780,10 +9525,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.959232,
-          40.7946676
-        ]
+        "coordinates": [-73.959232, 40.7946676]
       },
       "properties": {
         "venue_id": "ven_596454514639324f565773526b6f77325f525975565a6c4a496843",
@@ -9895,10 +9637,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9527871,
-          40.7986084
-        ]
+        "coordinates": [-73.9527871, 40.7986084]
       },
       "properties": {
         "venue_id": "ven_556b7049334667774f714d526b6f773272784f674d32374a496843",
@@ -10010,10 +9749,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9478302,
-          40.7967768
-        ]
+        "coordinates": [-73.9478302, 40.7967768]
       },
       "properties": {
         "venue_id": "ven_45657a747841537a446e66526b6f77337655576b3354544a496843",
@@ -10125,10 +9861,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9562991,
-          40.8053238
-        ]
+        "coordinates": [-73.9562991, 40.8053238]
       },
       "properties": {
         "venue_id": "ven_73626d6264417472545444526b6f7733546c34765161434a496843",
@@ -10240,10 +9973,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.955715,
-          40.8035271
-        ]
+        "coordinates": [-73.955715, 40.8035271]
       },
       "properties": {
         "venue_id": "ven_5538454350685037477757526b6f7732625235385957434a496843",
@@ -10355,10 +10085,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9624148,
-          40.8055436
-        ]
+        "coordinates": [-73.9624148, 40.8055436]
       },
       "properties": {
         "venue_id": "ven_6b5874326247764f4b4e30526b6f7732336a796a6136774a496843",
@@ -10470,10 +10197,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9528142,
-          40.7973992
-        ]
+        "coordinates": [-73.9528142, 40.7973992]
       },
       "properties": {
         "venue_id": "ven_457638322d557a4b316668526b6f773272784e7952794b4a496843",
@@ -10585,10 +10309,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9581866,
-          40.7946276
-        ]
+        "coordinates": [-73.9581866, 40.7946276]
       },
       "properties": {
         "venue_id": "ven_495f727346415163724f64526b6f77325f784f413864794a496843",
@@ -10700,10 +10421,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9521554,
-          40.804171
-        ]
+        "coordinates": [-73.9521554, 40.804171]
       },
       "properties": {
         "venue_id": "ven_6f5f5237484d304548796c526b6f77334c5145305f64304a496843",
@@ -10815,10 +10533,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9497254,
-          40.8015171
-        ]
+        "coordinates": [-73.9497254, 40.8015171]
       },
       "properties": {
         "venue_id": "ven_414d47754450786e454d38526b6f7732445252584b536d4a496843",
@@ -10930,10 +10645,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9581806,
-          40.8005895
-        ]
+        "coordinates": [-73.9581806, 40.8005895]
       },
       "properties": {
         "venue_id": "ven_4d63356a2d496c52305864526b6f77326a4247625036314a496843",
@@ -11045,10 +10757,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9533637,
-          40.8066447
-        ]
+        "coordinates": [-73.9533637, 40.8066447]
       },
       "properties": {
         "venue_id": "ven_555f696579703950333341526b6f7732507869384351414a496843",
@@ -11160,10 +10869,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9570554,
-          40.7998697
-        ]
+        "coordinates": [-73.9570554, 40.7998697]
       },
       "properties": {
         "venue_id": "ven_5564467a764d326a453335526b6f77326a524d794d35724a496843",
@@ -11275,10 +10981,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9535015,
-          40.8030014
-        ]
+        "coordinates": [-73.9535015, 40.8030014]
       },
       "properties": {
         "venue_id": "ven_304e4549384233324b5849526b6f7732625231304178764a496843",
@@ -11390,10 +11093,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [
-          -73.9522251,
-          40.79903
-        ]
+        "coordinates": [-73.9522251, 40.79903]
       },
       "properties": {
         "venue_id": "ven_5958354a73306156506836526b6f77327278614c6c59714a496843",

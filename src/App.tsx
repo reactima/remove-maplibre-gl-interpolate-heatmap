@@ -13,7 +13,7 @@ export default function App() {
     // compute centroid of all points
     let lng = 0
     let lat = 0
-    dataset.features.forEach(f => {
+    dataset.features.forEach((f) => {
       lng += f.geometry.coordinates[0]
       lat += f.geometry.coordinates[1]
     })

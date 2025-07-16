@@ -1,4 +1,4 @@
-import { MaplibreInterpolateHeatmapLayer } from './layer';
+import { MaplibreInterpolateHeatmapLayer } from './layer'
 
-export default MaplibreInterpolateHeatmapLayer;
-export { MaplibreInterpolateHeatmapLayer };
+export default MaplibreInterpolateHeatmapLayer
+export { MaplibreInterpolateHeatmapLayer }
