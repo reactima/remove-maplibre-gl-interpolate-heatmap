@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import maplibre from 'maplibre-gl'
-import { MaplibreInterpolateHeatmapLayer } from 'maplibre-gl-interpolate-heatmap'
+import { createSmartInterpolatedHeatmap } from './heatmapUtils'
 import footTrafficRaw from './data/foottraffic.geojson?raw'
 import type { FootTrafficWithTimeSeries } from './types'
 
@@ -28,14 +28,7 @@ export default function App() {
     })
 
     map.on('load', () => {
-      const heatmap = new MaplibreInterpolateHeatmapLayer({
-        id: 'foot-traffic-heatmap',
-        data: dataset.features.map(f => ({
-          lat: f.geometry.coordinates[1],
-          lon: f.geometry.coordinates[0],
-          val: f.properties.avg_busyness,
-        })),
-      })
+      const heatmap = createSmartInterpolatedHeatmap(dataset)
       map.addLayer(heatmap as any)
     })
 
