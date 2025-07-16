@@ -8,3 +8,4 @@ export default defineConfig(async () => {
       open: false,
     },
   }
+})
