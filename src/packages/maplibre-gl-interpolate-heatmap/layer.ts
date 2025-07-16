@@ -99,6 +99,9 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     ) {
       throw new Error('WebGL extension not supported');
     }
+    if (isWebGL2 && !gl.getExtension('EXT_color_buffer_float')) {
+      throw new Error('EXT_color_buffer_float not supported');
+    }
     this.canvas = map.getCanvas();
     const vertexSource = `
               precision highp float;
@@ -277,7 +280,7 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     gl.texImage2D(
       gl.TEXTURE_2D,
       0,
-      gl.RGBA,
+      isWebGL2 ? (gl as WebGL2RenderingContext).RGBA32F : gl.RGBA,
       this.framebufferWidth,
       this.framebufferHeight,
       0,
@@ -332,7 +335,7 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
       gl.texImage2D(
         gl.TEXTURE_2D,
         0,
-        gl.RGBA,
+        isWebGL2 ? (gl as WebGL2RenderingContext).RGBA32F : gl.RGBA,
         this.framebufferWidth,
         this.framebufferHeight,
         0,
