@@ -86,12 +86,18 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     map: maplibregl.Map,
     gl: WebGLRenderingContext | WebGL2RenderingContext,
   ): void {
+    const isWebGL2 =
+      typeof WebGL2RenderingContext !== 'undefined' &&
+      gl instanceof WebGL2RenderingContext;
     if (
-      !gl.getExtension('OES_texture_float') ||
-      !gl.getExtension('WEBGL_color_buffer_float') ||
-      !gl.getExtension('EXT_float_blend')
+      !isWebGL2 &&
+      (
+        !gl.getExtension('OES_texture_float') ||
+        !gl.getExtension('WEBGL_color_buffer_float') ||
+        !gl.getExtension('EXT_float_blend')
+      )
     ) {
-      throw 'WebGL extension not supported';
+      throw new Error('WebGL extension not supported');
     }
     this.canvas = map.getCanvas();
     const vertexSource = `
