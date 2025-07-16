@@ -508,6 +508,12 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     ) {
       throw new Error('error: missing options for rendering');
     }
+
+
+    gl.disable(gl.DEPTH_TEST)          // ← add (kills depth test)
+    gl.depthMask(false)                // ← add (do not overwrite depth)
+
+
     gl.useProgram(this.drawProgram);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.drawingVerticesBuffer);
     gl.enableVertexAttribArray(this.aPositionDraw);
@@ -523,6 +529,18 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     gl.drawElements(gl.TRIANGLES, this.indicesNumber, gl.UNSIGNED_BYTE, 0);
     this.checkGlError(gl, 'render');
     if (this.debug) console.log('Render finished');
+
+
+    gl.depthMask(true)                 // ← restore (optional)
+
+    if (this.debug) {                  // optional sanity‑check
+      const px = new Uint8Array(4)
+      gl.readPixels(this.canvas!.width>>1, this.canvas!.height>>1, 1, 1,
+                    gl.RGBA, gl.UNSIGNED_BYTE, px)
+      console.log('Center pixel post‑draw', px)
+    }
+    if (this.debug) console.log('Render finished')
+
   }
 }
 /**
