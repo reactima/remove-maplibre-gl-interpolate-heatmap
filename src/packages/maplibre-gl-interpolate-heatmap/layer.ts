@@ -145,11 +145,15 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
               uniform sampler2D u_ComputationTexture;
               uniform vec2 u_ScreenSize;
               uniform float u_Opacity;
-              void main(void) {
-                  vec4 data = texture2D(u_ComputationTexture, vec2(gl_FragCoord.x/u_ScreenSize.x, gl_FragCoord.y/u_ScreenSize.y));
-                  float u = data.x/data.y;
-                  u += u_Opacity*0.00000001; // force WebGL to use u_Opacity. This might not be the case depending on valueToColor4
-                  gl_FragColor = valueToColor4(u, u_Opacity);
+              void main() {
+                  vec4 data = texture2D(
+                      u_ComputationTexture,
+                      vec2(gl_FragCoord.x/u_ScreenSize.x,
+                           gl_FragCoord.y/u_ScreenSize.y)
+                  );
+                  float denom = max(data.y, 1e-6);
+                  float u = data.x / denom;
+                  gl_FragColor = valueToColor4(clamp(u, 0., 1.), u_Opacity);
               }
           `;
     const computationVertexSource = `
@@ -173,8 +177,8 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
               void main() {
                   vec2 x = vec2(gl_FragCoord.x/u_FramebufferSize.x, gl_FragCoord.y/u_FramebufferSize.y);
                   vec2 xi = vec2((xiNormalized.x + 1.)/2., (xiNormalized.y + 1.)/2.);
-                  float dist = distance(x, xi);
-                  float wi = 1.0/pow(dist, p);
+                  float dist = max(distance(x, xi), 1e-4);
+                  float wi = 1.0 / pow(dist, p);
                   gl_FragColor = vec4(ui*wi, wi, 0.0, 1.0);
               }
           `;
@@ -262,6 +266,13 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
       !this.uOpacity
     ) {
       throw 'WebGL error: Failed to get the storage location of drawing variable';
+    }
+    if (this.debug) {
+      const isFiniteTex = gl.getUniformLocation(
+        this.drawProgram,
+        'u_ComputationTexture',
+      );
+      console.log('Draw uniforms ready, tex loc:', isFiniteTex);
     }
     const fullScreenQuad = [
       maplibregl.MercatorCoordinate.fromLngLat({ lng: -180, lat: -85 }).x,
