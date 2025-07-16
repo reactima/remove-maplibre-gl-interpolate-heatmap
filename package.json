@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node vite-dev.mjs",
     "build": "node vite-dev.mjs build",
-    "preview": "node vite-dev.mjs preview"
+    "preview": "node vite-dev.mjs preview",
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "",
@@ -26,6 +27,7 @@
     "@vitejs/plugin-react": "^4.6.0",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
+    "prettier": "^3.6.2",
     "tailwindcss": "^4.1.11",
     "typescript": "^5.8.3",
     "vite-tsconfig-paths": "^5.1.4"
