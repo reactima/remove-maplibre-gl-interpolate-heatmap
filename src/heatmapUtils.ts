@@ -37,15 +37,12 @@ export function createSmartInterpolatedHeatmap(dataset: FootTrafficWithTimeSerie
     maxValue,
     p,
     framebufferFactor,
+    debug: true,
     valueToColor: `
       vec3 valueToColor(float value) {
-        if (value < 0.3) {
-          return vec3(0.0, 0.0, 1.0 - value);
-        } else if (value < 0.7) {
-          return vec3(value * 2.0 - 0.6, 1.0, 0.0);
-        } else {
-          return vec3(1.0, 1.0 - value, 0.0);
-        }
+        if (value < 0.3) return vec3(0.0, 0.0, 1.0 - value);
+        if (value < 0.7) return vec3(value * 2.0 - 0.6, 1.0, 0.0);
+        return vec3(1.0, 1.0 - value, 0.0);
       }
     `,
   })
