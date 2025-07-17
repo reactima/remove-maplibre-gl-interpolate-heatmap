@@ -133,37 +133,41 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
     this.checkGlError(gl, 'extension check')
     this.canvas = map.getCanvas()
     const vertexSource = `
+              #version 300 es
               precision highp float;
-              attribute vec2 a_Position;
+              in vec2 a_Position;
               uniform mat4 u_Matrix;
               void main() {
                   gl_Position = u_Matrix * vec4(a_Position, 0.0, 1.0);
               }
           `
     const fragmentSource = `
+              #version 300 es
               precision highp float;
               ${this.valueToColor}
               ${this.valueToColor4}
               uniform sampler2D u_ComputationTexture;
               uniform vec2 u_ScreenSize;
               uniform float u_Opacity;
+              out vec4 fragColor;
               void main() {
-                  vec4 data = texture2D(
+                  vec4 data = texture(
                       u_ComputationTexture,
                       vec2(gl_FragCoord.x/u_ScreenSize.x,
                            gl_FragCoord.y/u_ScreenSize.y)
                   );
                   float denom = max(data.y, 1e-6);
                   float u = data.x / denom;
-                  gl_FragColor = valueToColor4(clamp(u, 0., 1.), u_Opacity);
+                  fragColor = valueToColor4(clamp(u, 0., 1.), u_Opacity);
               }
           `
     const computationVertexSource = `
+              #version 300 es
               precision highp float;
               uniform mat4 u_Matrix;
               uniform vec2 xi;
-              varying vec2 xiNormalized;
-              attribute vec2 a_Position;
+              out vec2 xiNormalized;
+              in vec2 a_Position;
               void main() {
                   vec4 xiProjected = u_Matrix * vec4(xi, 0.0, 1.0);
                   xiNormalized = vec2(xiProjected.x / xiProjected.w, xiProjected.y / xiProjected.w);
@@ -171,17 +175,19 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
               }
           `
     const computationFragmentSource = `
+              #version 300 es
               precision highp float;
               uniform float ui;
-              varying vec2 xiNormalized;
+              in vec2 xiNormalized;
               uniform float p;
               uniform vec2 u_FramebufferSize;
+              out vec4 fragColor;
               void main() {
                   vec2 x = vec2(gl_FragCoord.x/u_FramebufferSize.x, gl_FragCoord.y/u_FramebufferSize.y);
                   vec2 xi = vec2((xiNormalized.x + 1.)/2., (xiNormalized.y + 1.)/2.);
                   float dist = max(distance(x, xi), 1e-4);
                   float wi = 1.0 / pow(dist, p);
-                  gl_FragColor = vec4(ui*wi, wi, 0.0, 1.0);
+                  fragColor = vec4(ui*wi, wi, 0.0, 1.0);
               }
           `
     const computationVertexShader = createVertexShader(
