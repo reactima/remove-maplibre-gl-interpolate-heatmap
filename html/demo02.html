@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>heat‑map shader test (webgl2)</title>
+    <style>
+        html, body {
+            margin: 0;
+            height: 100%;
+            background: #000;
+            color: #8f8;
+            font-family: monospace
+        }
+
+        #gl {
+            display: block;
+            width: 100%;
+            height: 100%
+        }
+
+        #msg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 4px;
+            font-size: 12px;
+            pointer-events: none
+        }
+    </style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="msg"></div>
+<script>
+    const $ = q => document.querySelector(q)
+    const cv = $('#gl'), msg = $('#msg')
+    const gl = cv.getContext('webgl2', {premultipliedAlpha: false}) || alert('webgl2 required')
+    cv.width = cv.clientWidth;
+    cv.height = cv.clientHeight
+    const W = cv.width, H = cv.height
+    const I = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+    const valueToColor = `vec3 valueToColor(float v){return vec3(max((v-.5)*2.,0.),1.-2.*abs(v-.5),max((.5-v)*2.,0.));}`
+    const valueToColor4 = `vec4 valueToColor4(float v,float a){return vec4(valueToColor(v),a);}`
+    const vertexSource = `#version 300 es
+precision highp float;
+in vec2 a_Position;
+uniform mat4 u_Matrix;
+void main(){gl_Position=u_Matrix*vec4(a_Position,0.,1.);}
+`
+    const fragmentSource = `#version 300 es
+precision highp float;
+${valueToColor}
+${valueToColor4}
+uniform sampler2D u_ComputationTexture;
+uniform vec2 u_ScreenSize;
+uniform float u_Opacity;
+out vec4 frag;
+void main(){
+ vec4 data=texture(u_ComputationTexture,vec2(gl_FragCoord.x/u_ScreenSize.x,gl_FragCoord.y/u_ScreenSize.y));
+ float denom=max(data.y,1e-6);
+ float u=data.x/denom;
+ frag=valueToColor4(clamp(u,0.,1.),u_Opacity);
+}
+`
+    const computationVertexSource = `#version 300 es
+precision highp float;
+uniform mat4 u_Matrix;
+uniform vec2 xi;
+out vec2 xiNormalized;
+in vec2 a_Position;
+void main(){
+ vec4 xp=u_Matrix*vec4(xi,0.,1.);
+ xiNormalized=vec2(xp.x/xp.w,xp.y/xp.w);
+ gl_Position=u_Matrix*vec4(a_Position,0.,1.);
+}
+`
+    const computationFragmentSource = `#version 300 es
+precision highp float;
+uniform float ui;
+in vec2 xiNormalized;
+uniform float p;
+uniform vec2 u_FramebufferSize;
+out vec4 frag;
+void main(){
+ vec2 x=vec2(gl_FragCoord.x/u_FramebufferSize.x,gl_FragCoord.y/u_FramebufferSize.y);
+ vec2 xi=vec2((xiNormalized.x+1.)*.5,(xiNormalized.y+1.)*.5);
+ float d=max(distance(x,xi),1e-4);
+ float w=1./pow(d,p);
+ frag=vec4(ui*w,w,0.,1.);
+}
+`
+    const compile = (src, t) => {
+        const s = gl.createShader(t);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw gl.getShaderInfoLog(s);
+        return s
+    }
+    const link = (vs, fs) => {
+        const p = gl.createProgram();
+        gl.attachShader(p, vs);
+        gl.attachShader(p, fs);
+        gl.linkProgram(p);
+        if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw gl.getProgramInfoLog(p);
+        return p
+    }
+    const progDraw = link(compile(vertexSource, gl.VERTEX_SHADER), compile(fragmentSource, gl.FRAGMENT_SHADER))
+    const progComp = link(compile(computationVertexSource, gl.VERTEX_SHADER), compile(computationFragmentSource, gl.FRAGMENT_SHADER))
+    const quadV = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadV)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, -1, 1, 1, 1, 1, -1]), gl.STATIC_DRAW)
+    const quadI = gl.createBuffer()
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, quadI)
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0, 1, 2, 0, 2, 3]), gl.STATIC_DRAW)
+    let texIF = gl.RGBA32F, texType = gl.FLOAT
+    if (!gl.getExtension('EXT_color_buffer_float')) {
+        const hf = gl.getExtension('EXT_color_buffer_half_float')
+        if (hf) {
+            texIF = gl.RGBA16F;
+            texType = gl.HALF_FLOAT
+        } else {
+            alert('no float render targets');
+            throw 'unsupported'
+        }
+    }
+    const tex = gl.createTexture()
+    gl.bindTexture(gl.TEXTURE_2D, tex)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.texImage2D(gl.TEXTURE_2D, 0, texIF, W, H, 0, gl.RGBA, texType, null)
+    const fbo = gl.createFramebuffer()
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+    const pts = [{x: -.6, y: -.6, v: 1}, {x: .4, y: -.4, v: .8}, {x: -.4, y: .4, v: .6}, {x: .5, y: .5, v: .9}]
+    const locD = {
+        pos: gl.getAttribLocation(progDraw, 'a_Position'),
+        mat: gl.getUniformLocation(progDraw, 'u_Matrix'),
+        tex: gl.getUniformLocation(progDraw, 'u_ComputationTexture'),
+        scr: gl.getUniformLocation(progDraw, 'u_ScreenSize'),
+        op: gl.getUniformLocation(progDraw, 'u_Opacity')
+    }
+    const locC = {
+        pos: gl.getAttribLocation(progComp, 'a_Position'),
+        mat: gl.getUniformLocation(progComp, 'u_Matrix'),
+        xi: gl.getUniformLocation(progComp, 'xi'),
+        ui: gl.getUniformLocation(progComp, 'ui'),
+        p: gl.getUniformLocation(progComp, 'p'),
+        size: gl.getUniformLocation(progComp, 'u_FramebufferSize')
+    }
+
+    function render() {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
+        gl.viewport(0, 0, W, H)
+        gl.disable(gl.DEPTH_TEST)
+        gl.clearColor(0, 0, 0, 1)
+        gl.clear(gl.COLOR_BUFFER_BIT)
+        gl.enable(gl.BLEND)
+        gl.blendFunc(gl.ONE, gl.ONE)
+        gl.useProgram(progComp)
+        gl.uniformMatrix4fv(locC.mat, false, I)
+        gl.uniform1f(locC.p, 3)
+        gl.uniform2f(locC.size, W, H)
+        gl.bindBuffer(gl.ARRAY_BUFFER, quadV)
+        gl.enableVertexAttribArray(locC.pos)
+        gl.vertexAttribPointer(locC.pos, 2, gl.FLOAT, false, 0, 0)
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, quadI)
+        pts.forEach(pt => {
+            gl.uniform2f(locC.xi, pt.x, pt.y)
+            gl.uniform1f(locC.ui, pt.v)
+            gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0)
+        })
+        gl.disable(gl.BLEND)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        gl.viewport(0, 0, W, H)
+        gl.clearColor(0, 0, 0, 1)
+        gl.clear(gl.COLOR_BUFFER_BIT)
+        gl.useProgram(progDraw)
+        gl.uniformMatrix4fv(locD.mat, false, I)
+        gl.uniform2f(locD.scr, W, H)
+        gl.uniform1f(locD.op, 1)
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, tex)
+        gl.uniform1i(locD.tex, 0)
+        gl.bindBuffer(gl.ARRAY_BUFFER, quadV)
+        gl.enableVertexAttribArray(locD.pos)
+        gl.vertexAttribPointer(locD.pos, 2, gl.FLOAT, false, 0, 0)
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, quadI)
+        gl.enable(gl.BLEND)
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+        gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0)
+        gl.disable(gl.BLEND)
+        const c = new Uint8Array(4)
+        gl.readPixels(W >> 1, H >> 1, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, c)
+        msg.textContent = 'center RGBA ' + Array.from(c).join(',')
+    }
+
+    render()
+</script>
+</body>
+</html>
