@@ -461,7 +461,9 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
       !this.canvas.width ||
       !this.canvas.height
     ) {
-      throw new Error('error: missing options for prerendering')
+      if (this.debug)
+        console.warn('Skipping prerender: missing framebuffer or canvas data')
+      return
     }
     gl.disable(gl.DEPTH_TEST)
     gl.enable(gl.BLEND)
@@ -519,7 +521,9 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
       !this.canvas.height ||
       !this.indicesNumber
     ) {
-      throw new Error('error: missing options for rendering')
+      if (this.debug)
+        console.warn('Skipping render: missing framebuffer or canvas data')
+      return
     }
 
     gl.disable(gl.DEPTH_TEST) // ← add (kills depth test)
