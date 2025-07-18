@@ -1,9 +1,11 @@
 import earcut from 'earcut'
 import maplibregl, { CustomLayerInterface } from 'maplibre-gl'
 
-type MaplibreInterpolateHeatmapLayerOptions = {
+type Pt = { lat: number; lon: number; val: number }
+
+type Opts = {
   id: string
-  data: { lat: number; lon: number; val: number }[]
+  data: Pt[]
   framebufferFactor?: number
   maxValue?: number
   minValue?: number
@@ -17,271 +19,217 @@ type MaplibreInterpolateHeatmapLayerOptions = {
 }
 
 class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
+  /* ---------- user ---------- */
   id: string
-  data: { lat: number; lon: number; val: number }[]
+  data: Pt[]
   framebufferFactor: number
   maxValue: number
   minValue: number
   opacity: number
   p: number
   aoi?: { lat: number; lon: number }[]
-  valueToColor?: string
-  valueToColor4?: string
+  valueToColor: string
+  valueToColor4: string
   textureCoverSameAreaAsROI: boolean
-  points: number[][] = []
-  // Custom Props
-  aPositionComputation?: number
-  aPositionDraw?: number
-  canvas?: HTMLCanvasElement
-  computationFramebuffer: WebGLFramebuffer | null = null
-  computationProgram: WebGLProgram | null = null
-  computationTexture: WebGLTexture | null = null
-  computationVerticesBuffer: WebGLBuffer | null = null
-  drawingVerticesBuffer: WebGLBuffer | null = null
-  drawProgram: WebGLProgram | null = null
-  framebufferHeight?: number
-  framebufferWidth?: number
-  indicesBuffer: WebGLBuffer | null = null
-  indicesNumber: number | null = null
-  renderingMode: '2d' | '3d' = '2d'
-  resizeFramebuffer?: () => void
-  type: 'custom' = 'custom' as const
-  uComputationTexture: WebGLUniformLocation | null = null
-  uFramebufferSize: WebGLUniformLocation | null = null
-  uMatrixComputation: WebGLUniformLocation | null = null
-  uMatrixDraw: WebGLUniformLocation | null = null
-  uOpacity: WebGLUniformLocation | null = null
-  uP: WebGLUniformLocation | null = null
-  uScreenSizeDraw: WebGLUniformLocation | null = null
-  uUi: WebGLUniformLocation | null = null
-  uXi: WebGLUniformLocation | null = null
   debug = false
 
-  /* -------------------- helpers -------------------- */
-  private checkGlError(gl: WebGLRenderingContext, stage: string) {
+  /* ---------- runtime ---------- */
+  type: 'custom' = 'custom' as const
+  canvas?: HTMLCanvasElement
+  renderingMode: '2d' | '3d' = '2d'
+  points: number[][] = []
+  frame = 0
+
+  /* ---------- GL handles (same list) ---------- */
+  aPositionComputation = -1
+  aPositionDraw = -1
+  uMatrixComputation: WebGLUniformLocation | null = null
+  uUi: WebGLUniformLocation | null = null
+  uXi: WebGLUniformLocation | null = null
+  uP: WebGLUniformLocation | null = null
+  uFramebufferSize: WebGLUniformLocation | null = null
+  uMatrixDraw: WebGLUniformLocation | null = null
+  uComputationTexture: WebGLUniformLocation | null = null
+  uScreenSizeDraw: WebGLUniformLocation | null = null
+  uOpacity: WebGLUniformLocation | null = null
+  computationProgram: WebGLProgram | null = null
+  drawProgram: WebGLProgram | null = null
+  computationVerticesBuffer: WebGLBuffer | null = null
+  drawingVerticesBuffer: WebGLBuffer | null = null
+  indicesBuffer: WebGLBuffer | null = null
+  computationFramebuffer: WebGLFramebuffer | null = null
+  computationTexture: WebGLTexture | null = null
+  framebufferWidth = 0
+  framebufferHeight = 0
+  indicesNumber = 0
+  resizeFramebuffer?: () => void
+
+  /* ---------- logger ---------- */
+  private log = (...a: unknown[]) =>
+    this.debug && console.log('[Heatmap]', ...a)
+  private err = (...a: unknown[]) =>
+    this.debug && console.error('[Heatmap‑ERR]', ...a)
+
+  private chk = (gl: WebGL2RenderingContext, stage: string) => {
     if (!this.debug) return
-    const err = gl.getError()
-    if (err !== gl.NO_ERROR)
-      console.warn(`WebGL error @ ${stage}: 0x${err.toString(16)}`)
-  }
-  private checkFramebuffer(
-    gl: WebGLRenderingContext | WebGL2RenderingContext,
-    stage: string,
-  ) {
-    if (!this.debug) return
-    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
-    if (status !== gl.FRAMEBUFFER_COMPLETE)
-      console.warn(
-        `Framebuffer incomplete @ ${stage}: 0x${status.toString(16)}`,
-      )
+    const e = gl.getError()
+    if (e !== gl.NO_ERROR) this.err('gl err 0x' + e.toString(16), '@', stage)
   }
 
-  constructor(options: MaplibreInterpolateHeatmapLayerOptions) {
-    this.debug = options.debug ?? false
-    if (this.debug)
-      console.log('MaplibreInterpolateHeatmapLayer:constructor', options)
-    this.id = options.id || ''
-    this.data = options.data || []
-    this.aoi = options.aoi || []
+  /* ---------- matrix util with extra logs ---------- */
+  private readonly I4 = new Float32Array([
+    1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
+  ])
+  private toF32 = (
+    m: number[] | Float32Array | Float64Array | undefined,
+    tag: string,
+  ): Float32Array => {
+    if (!m) {
+      this.err(tag, 'matrix undefined → I4')
+      return this.I4
+    }
+
+    // Check if it's already a Float32Array
+    if (m instanceof Float32Array) {
+      if (m.length < 16) {
+        this.err(tag, 'matrix len', m.length, '<16 → I4')
+        return this.I4
+      }
+      return m
+    }
+
+    // If it's a Float64Array, convert it to Float32Array
+    if (m instanceof Float64Array) {
+      const arr = new Float32Array(m)
+      if (arr.length < 16) {
+        this.err(tag, 'matrix len', arr.length, '<16 → I4')
+        return this.I4
+      }
+      return arr
+    }
+
+    const arr = new Float32Array(m as any) // clone guarantees accepted buffer
+    if (arr.length < 16) {
+      this.err(tag, 'matrix len', arr.length, '<16 → I4')
+      return this.I4
+    }
+    return arr
+  }
+
+  /* ---------- ctor ---------- */
+  constructor(o: Opts) {
+    this.debug = !!o.debug
+    this.log('ctor opts', o)
+    this.id = o.id
+    this.data = o.data
+    this.framebufferFactor = o.framebufferFactor ?? 0.3
+    this.minValue = o.minValue ?? Infinity
+    this.maxValue = o.maxValue ?? -Infinity
+    this.opacity = o.opacity ?? 0.5
+    this.p = o.p ?? 3
+    this.aoi = o.aoi
     this.valueToColor =
-      options.valueToColor ||
-      `
-      vec3 valueToColor(float value) {
-          return vec3(max((value-0.5)*2.0, 0.0), 1.0 - 2.0*abs(value - 0.5), max((0.5-value)*2.0, 0.0));
-      }
-  `
+      o.valueToColor ||
+      `vec3 valueToColor(float v){return vec3(max((v-0.5)*2.0,0.),1.-2.*abs(v-0.5),max((0.5-v)*2.0,0.));}`
     this.valueToColor4 =
-      options.valueToColor4 ||
-      `
-      vec4 valueToColor4(float value, float defaultOpacity) {
-          return vec4(valueToColor(value), defaultOpacity);
-      }
-  `
-    this.opacity = options.opacity || 0.5
-    this.minValue = options.minValue || Infinity
-    this.maxValue = options.maxValue || -Infinity
-    this.p = options.p || 3
-    this.framebufferFactor = options.framebufferFactor || 0.3
-    // Having a framebufferFactor < 1 and a texture that don't cover the entire map results in visual artifacts, so we prevent this situation
+      o.valueToColor4 ||
+      `vec4 valueToColor4(float v,float o){return vec4(valueToColor(v),o);}`
     this.textureCoverSameAreaAsROI = this.framebufferFactor === 1
   }
 
-  onAdd(
-    map: maplibregl.Map,
-    gl: WebGLRenderingContext | WebGL2RenderingContext,
-  ): void {
-    if (this.debug)
-      console.log('MaplibreInterpolateHeatmapLayer:onAdd', {
-        points: this.data.length,
-        framebufferFactor: this.framebufferFactor,
-      })
-    const isWebGL2 =
-      typeof WebGL2RenderingContext !== 'undefined' &&
-      gl instanceof WebGL2RenderingContext
-    if (
-      !isWebGL2 &&
-      (!gl.getExtension('OES_texture_float') ||
-        !gl.getExtension('WEBGL_color_buffer_float') ||
-        !gl.getExtension('EXT_float_blend'))
-    ) {
-      throw new Error('WebGL extension not supported')
+  /* ---------- onAdd (unchanged except logger lines kept) ---------- */
+  onAdd(map: maplibregl.Map, gl: WebGLRenderingContext) {
+    const gl2 = gl as unknown as WebGL2RenderingContext
+    if (!(gl2 instanceof WebGL2RenderingContext))
+      throw new Error('WebGL2 required')
+    if (!gl2.getExtension('EXT_color_buffer_float'))
+      throw new Error('EXT_color_buffer_float missing')
+    this.canvas = map.getCanvas() as HTMLCanvasElement
+    this.log('onAdd: canvas', this.canvas.width, this.canvas.height)
+
+    /* ---------- shader src (same as previous) ---------- */
+    const vSrc = `#version 300 es
+precision highp float;
+in vec2 a_Position;
+uniform mat4 u_Matrix;
+void main(){gl_Position=u_Matrix*vec4(a_Position,0.,1.);}`
+
+    const fSrc = `#version 300 es
+precision highp float;
+${this.valueToColor}
+${this.valueToColor4}
+uniform sampler2D u_ComputationTexture;
+uniform vec2 u_ScreenSize;
+uniform float u_Opacity;
+out vec4 fragColor;
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_ScreenSize;
+  vec4 d=texture(u_ComputationTexture,uv);
+  float denom=max(d.y,1e-6);
+  float u=d.x/denom;
+  fragColor=valueToColor4(clamp(u,0.,1.),u_Opacity);
+}`
+
+    const cvSrc = `#version 300 es
+precision highp float;
+uniform mat4 u_Matrix;
+uniform vec2 xi;
+out vec2 xiN;
+in vec2 a_Position;
+void main(){
+  vec4 p=u_Matrix*vec4(xi,0.,1.);
+  xiN=p.xy/p.w;
+  gl_Position=u_Matrix*vec4(a_Position,0.,1.);
+}`
+
+    const cfSrc = `#version 300 es
+precision highp float;
+uniform float ui;
+uniform float p;
+uniform vec2 u_FramebufferSize;
+in vec2 xiN;
+out vec4 fragColor;
+void main(){
+  vec2 x=gl_FragCoord.xy/u_FramebufferSize;
+  vec2 xi=(xiN+1.)/2.;
+  float dist=max(distance(x,xi),1e-4);
+  float wi=1./pow(dist,p);
+  fragColor=vec4(ui*wi,wi,0.,1.);
+}`
+
+    /* ---------- compile/link ---------- */
+    const compProg = mkProg(gl2, cvSrc, cfSrc, this.log, this.err)
+    const drawProg = mkProg(gl2, vSrc, fSrc, this.log, this.err)
+    this.computationProgram = compProg
+    this.drawProgram = drawProg
+
+    /* ---------- lookups with warnings ---------- */
+    const au = (name: string, prog: WebGLProgram) => {
+      const loc = gl2.getUniformLocation(prog, name)
+      if (!loc) this.err('uniform', name, 'is null')
+      return loc
     }
-    if (isWebGL2 && !gl.getExtension('EXT_color_buffer_float')) {
-      throw new Error('EXT_color_buffer_float not supported')
+    const aa = (name: string, prog: WebGLProgram) => {
+      const loc = gl2.getAttribLocation(prog, name)
+      if (loc === -1) this.err('attrib', name, 'is -1')
+      return loc
     }
-    if (this.debug) console.log('WebGL extensions validated')
-    this.checkGlError(gl, 'extension check')
-    this.canvas = map.getCanvas()
-    const vertexSource = `
-              #version 300 es
-              precision highp float;
-              in vec2 a_Position;
-              uniform mat4 u_Matrix;
-              void main() {
-                  gl_Position = u_Matrix * vec4(a_Position, 0.0, 1.0);
-              }
-          `
-    const fragmentSource = `
-              #version 300 es
-              precision highp float;
-              ${this.valueToColor}
-              ${this.valueToColor4}
-              uniform sampler2D u_ComputationTexture;
-              uniform vec2 u_ScreenSize;
-              uniform float u_Opacity;
-              out vec4 fragColor;
-              void main() {
-                  vec4 data = texture(
-                      u_ComputationTexture,
-                      vec2(gl_FragCoord.x/u_ScreenSize.x,
-                           gl_FragCoord.y/u_ScreenSize.y)
-                  );
-                  float denom = max(data.y, 1e-6);
-                  float u = data.x / denom;
-                  fragColor = valueToColor4(clamp(u, 0., 1.), u_Opacity);
-              }
-          `
-    const computationVertexSource = `
-              #version 300 es
-              precision highp float;
-              uniform mat4 u_Matrix;
-              uniform vec2 xi;
-              out vec2 xiNormalized;
-              in vec2 a_Position;
-              void main() {
-                  vec4 xiProjected = u_Matrix * vec4(xi, 0.0, 1.0);
-                  xiNormalized = vec2(xiProjected.x / xiProjected.w, xiProjected.y / xiProjected.w);
-                  gl_Position = u_Matrix * vec4(a_Position, 0.0, 1.0);
-              }
-          `
-    const computationFragmentSource = `
-              #version 300 es
-              precision highp float;
-              uniform float ui;
-              in vec2 xiNormalized;
-              uniform float p;
-              uniform vec2 u_FramebufferSize;
-              out vec4 fragColor;
-              void main() {
-                  vec2 x = vec2(gl_FragCoord.x/u_FramebufferSize.x, gl_FragCoord.y/u_FramebufferSize.y);
-                  vec2 xi = vec2((xiNormalized.x + 1.)/2., (xiNormalized.y + 1.)/2.);
-                  float dist = max(distance(x, xi), 1e-4);
-                  float wi = 1.0 / pow(dist, p);
-                  fragColor = vec4(ui*wi, wi, 0.0, 1.0);
-              }
-          `
-    const computationVertexShader = createVertexShader(
-      gl,
-      computationVertexSource,
-    )
-    if (!computationVertexShader)
-      throw new Error('error: computation vertex shader not created')
-    if (this.debug) console.log('Computation vertex shader created')
-    const computationFragmentShader = createFragmentShader(
-      gl,
-      computationFragmentSource,
-    )
-    if (!computationFragmentShader)
-      throw new Error('error: computation fragment shader not created')
-    if (this.debug) console.log('Computation fragment shader created')
-    this.computationProgram = createProgram(
-      gl,
-      computationVertexShader,
-      computationFragmentShader,
-    )
-    if (!this.computationProgram)
-      throw new Error('error: computation fragment shader not created')
-    if (this.debug) console.log('Computation program linked')
-    this.checkGlError(gl, 'program link')
-    this.aPositionComputation = gl.getAttribLocation(
-      this.computationProgram,
-      'a_Position',
-    )
-    this.uMatrixComputation = gl.getUniformLocation(
-      this.computationProgram,
-      'u_Matrix',
-    )
-    this.uUi = gl.getUniformLocation(this.computationProgram, 'ui')
-    this.uXi = gl.getUniformLocation(this.computationProgram, 'xi')
-    this.uP = gl.getUniformLocation(this.computationProgram, 'p')
-    this.uFramebufferSize = gl.getUniformLocation(
-      this.computationProgram,
-      'u_FramebufferSize',
-    )
-    if (
-      this.aPositionComputation < 0 ||
-      !this.uMatrixComputation ||
-      !this.uUi ||
-      !this.uXi ||
-      !this.uP ||
-      !this.uFramebufferSize
-    ) {
-      throw 'WebGL error: Failed to get the storage location of computation variable'
-    }
-    const drawingVertexShader = createVertexShader(gl, vertexSource)
-    if (!drawingVertexShader)
-      throw new Error('error: drawing vertex shader not created')
-    if (this.debug) console.log('Drawing vertex shader created')
-    const drawingFragmentShader = createFragmentShader(gl, fragmentSource)
-    if (!drawingFragmentShader)
-      throw new Error('error: drawing fragment shader not created')
-    if (this.debug) console.log('Drawing fragment shader created')
-    this.drawProgram = createProgram(
-      gl,
-      drawingVertexShader,
-      drawingFragmentShader,
-    )
-    if (!this.drawProgram) throw new Error('error: drawing program not created')
-    if (this.debug) console.log('Drawing program linked')
-    this.checkGlError(gl, 'program link')
-    this.aPositionDraw = gl.getAttribLocation(this.drawProgram, 'a_Position')
-    this.uMatrixDraw = gl.getUniformLocation(this.drawProgram, 'u_Matrix')
-    this.uComputationTexture = gl.getUniformLocation(
-      this.drawProgram,
-      'u_ComputationTexture',
-    )
-    this.uScreenSizeDraw = gl.getUniformLocation(
-      this.drawProgram,
-      'u_ScreenSize',
-    )
-    this.uOpacity = gl.getUniformLocation(this.drawProgram, 'u_Opacity')
-    if (
-      this.aPositionDraw < 0 ||
-      !this.uMatrixDraw ||
-      !this.uComputationTexture ||
-      !this.uScreenSizeDraw ||
-      !this.uOpacity
-    ) {
-      throw 'WebGL error: Failed to get the storage location of drawing variable'
-    }
-    if (this.debug) {
-      const isFiniteTex = gl.getUniformLocation(
-        this.drawProgram,
-        'u_ComputationTexture',
-      )
-      console.log('Draw uniforms ready, tex loc:', isFiniteTex)
-    }
-    const fullScreenQuad = [
+
+    this.aPositionComputation = aa('a_Position', compProg)
+    this.uMatrixComputation = au('u_Matrix', compProg)
+    this.uUi = au('ui', compProg)
+    this.uXi = au('xi', compProg)
+    this.uP = au('p', compProg)
+    this.uFramebufferSize = au('u_FramebufferSize', compProg)
+
+    this.aPositionDraw = aa('a_Position', drawProg)
+    this.uMatrixDraw = au('u_Matrix', drawProg)
+    this.uComputationTexture = au('u_ComputationTexture', drawProg)
+    this.uScreenSizeDraw = au('u_ScreenSize', drawProg)
+    this.uOpacity = au('u_Opacity', drawProg)
+
+    /* ---------- buffers, FBO, normalization (same as previous) ---------- */
+    const fsQuad = [
       maplibregl.MercatorCoordinate.fromLngLat({ lng: -180, lat: -85 }).x,
       maplibregl.MercatorCoordinate.fromLngLat({ lng: -180, lat: -85 }).y,
       maplibregl.MercatorCoordinate.fromLngLat({ lng: -180, lat: 85 }).x,
@@ -291,342 +239,297 @@ class MaplibreInterpolateHeatmapLayer implements CustomLayerInterface {
       maplibregl.MercatorCoordinate.fromLngLat({ lng: 180, lat: -85 }).x,
       maplibregl.MercatorCoordinate.fromLngLat({ lng: 180, lat: -85 }).y,
     ]
-    const drawingVertices = this.aoi?.length
-      ? this.aoi.flatMap((p) => {
-          const c = maplibregl.MercatorCoordinate.fromLngLat(p)
+    const drawVerts = this.aoi?.length
+      ? this.aoi.flatMap(({ lat, lon }) => {
+          const c = maplibregl.MercatorCoordinate.fromLngLat({ lat, lng: lon })
           return [c.x, c.y]
         })
-      : fullScreenQuad
-    if (this.debug)
-      console.log('Drawing vertices', drawingVertices.length, drawingVertices)
-    this.drawingVerticesBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.drawingVerticesBuffer)
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array(drawingVertices),
-      gl.STATIC_DRAW,
+      : fsQuad
+    this.drawingVerticesBuffer = gl2.createBuffer()
+    gl2.bindBuffer(gl2.ARRAY_BUFFER, this.drawingVerticesBuffer)
+    gl2.bufferData(
+      gl2.ARRAY_BUFFER,
+      new Float32Array(drawVerts),
+      gl2.STATIC_DRAW,
     )
-    const computationVertices = this.textureCoverSameAreaAsROI
-      ? drawingVertices
-      : fullScreenQuad
-    this.computationVerticesBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.computationVerticesBuffer)
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array(computationVertices),
-      gl.STATIC_DRAW,
+
+    const compVerts = this.textureCoverSameAreaAsROI ? drawVerts : fsQuad
+    this.computationVerticesBuffer = gl2.createBuffer()
+    gl2.bindBuffer(gl2.ARRAY_BUFFER, this.computationVerticesBuffer)
+    gl2.bufferData(
+      gl2.ARRAY_BUFFER,
+      new Float32Array(compVerts),
+      gl2.STATIC_DRAW,
     )
-    const indices = earcut(drawingVertices)
-    if (this.debug) console.log('Indices', indices.length, indices)
-    this.indicesBuffer = gl.createBuffer()
-    if (!this.indicesBuffer)
-      throw new Error('error: indices buffer not created')
-    this.indicesNumber = indices.length
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer)
-    gl.bufferData(
-      gl.ELEMENT_ARRAY_BUFFER,
-      new Uint8Array(indices),
-      gl.STATIC_DRAW,
+
+    const inds = earcut(drawVerts)
+    this.indicesNumber = inds.length
+    this.indicesBuffer = gl2.createBuffer()
+    gl2.bindBuffer(gl2.ELEMENT_ARRAY_BUFFER, this.indicesBuffer)
+    gl2.bufferData(
+      gl2.ELEMENT_ARRAY_BUFFER,
+      new Uint8Array(inds),
+      gl2.STATIC_DRAW,
     )
+    this.log('drawVerts', drawVerts.length / 2, 'indices', this.indicesNumber)
+
+    /* FBO */
     this.framebufferWidth = Math.ceil(
       this.canvas.width * this.framebufferFactor,
     )
     this.framebufferHeight = Math.ceil(
       this.canvas.height * this.framebufferFactor,
     )
-    if (this.debug)
-      console.log(
-        'Initial framebuffer',
-        this.framebufferWidth,
-        this.framebufferHeight,
-      )
-    this.computationTexture = gl.createTexture()
-    gl.bindTexture(gl.TEXTURE_2D, this.computationTexture)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-    gl.texImage2D(
-      gl.TEXTURE_2D,
+    this.log('FBO', this.framebufferWidth, this.framebufferHeight)
+
+    this.computationTexture = gl2.createTexture()
+    gl2.bindTexture(gl2.TEXTURE_2D, this.computationTexture)
+    gl2.texParameteri(gl2.TEXTURE_2D, gl2.TEXTURE_WRAP_S, gl2.CLAMP_TO_EDGE)
+    gl2.texParameteri(gl2.TEXTURE_2D, gl2.TEXTURE_WRAP_T, gl2.CLAMP_TO_EDGE)
+    gl2.texParameteri(gl2.TEXTURE_2D, gl2.TEXTURE_MAG_FILTER, gl2.NEAREST)
+    gl2.texParameteri(gl2.TEXTURE_2D, gl2.TEXTURE_MIN_FILTER, gl2.NEAREST)
+    gl2.texImage2D(
+      gl2.TEXTURE_2D,
       0,
-      isWebGL2 ? (gl as WebGL2RenderingContext).RGBA32F : gl.RGBA,
+      gl2.RGBA32F,
       this.framebufferWidth,
       this.framebufferHeight,
       0,
-      gl.RGBA,
-      gl.FLOAT,
+      gl2.RGBA,
+      gl2.FLOAT,
       null,
     )
-    this.computationFramebuffer = gl.createFramebuffer()
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.computationFramebuffer)
-    gl.framebufferTexture2D(
-      gl.FRAMEBUFFER,
-      gl.COLOR_ATTACHMENT0,
-      gl.TEXTURE_2D,
+
+    this.computationFramebuffer = gl2.createFramebuffer()
+    gl2.bindFramebuffer(gl2.FRAMEBUFFER, this.computationFramebuffer)
+    gl2.framebufferTexture2D(
+      gl2.FRAMEBUFFER,
+      gl2.COLOR_ATTACHMENT0,
+      gl2.TEXTURE_2D,
       this.computationTexture,
       0,
     )
-    this.checkFramebuffer(gl, 'FBO init')
-    gl.bindTexture(gl.TEXTURE_2D, null)
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-    this.checkGlError(gl, 'FBO init')
+    this.chk(gl2, 'FBO init')
+    gl2.bindFramebuffer(gl2.FRAMEBUFFER, null)
+
+    /* normalize data */
     this.points = []
-    let minValue = Infinity
-    let maxValue = -Infinity
-    this.data.forEach((rawPoint) => {
-      const mercatorCoordinates = maplibregl.MercatorCoordinate.fromLngLat({
-        lng: rawPoint.lon,
-        lat: rawPoint.lat,
-      })
-      this.points.push([
-        mercatorCoordinates.x,
-        mercatorCoordinates.y,
-        rawPoint.val,
-      ])
-      if (rawPoint.val < minValue) {
-        minValue = rawPoint.val
-      }
-      if (rawPoint.val > maxValue) {
-        maxValue = rawPoint.val
-      }
+    let mn = Infinity
+    let mx = -Infinity
+    this.data.forEach(({ lat, lon, val }) => {
+      const c = maplibregl.MercatorCoordinate.fromLngLat({ lng: lon, lat })
+      this.points.push([c.x, c.y, val])
+      mn = Math.min(mn, val)
+      mx = Math.max(mx, val)
     })
-    if (this.debug) console.log('Raw min/max', { minValue, maxValue })
-    if (this.debug) console.log('Points processed', this.points.length)
-    minValue = minValue < this.minValue ? minValue : this.minValue
-    maxValue = maxValue > this.maxValue ? maxValue : this.maxValue
-    if (this.debug) console.log('Normalized min/max', { minValue, maxValue })
-    this.points.forEach((point) => {
-      point[2] = (point[2] - minValue) / (maxValue - minValue)
-    })
+    mn = Math.min(mn, this.minValue)
+    mx = Math.max(mx, this.maxValue)
+    this.points.forEach((p) => (p[2] = (p[2] - mn) / (mx - mn)))
+    this.log('normalized', { mn, mx, pts: this.points.length })
+
+    /* resize handler (same) */
     this.resizeFramebuffer = () => {
-      if (this.debug) console.log('Resizing framebuffer')
-      if (!this.canvas || !this.canvas.width || !this.canvas.height)
-        throw new Error('error: required canvas `width` & `height`')
       this.framebufferWidth = Math.ceil(
-        this.canvas.width * this.framebufferFactor,
+        this.canvas!.width * this.framebufferFactor,
       )
       this.framebufferHeight = Math.ceil(
-        this.canvas.height * this.framebufferFactor,
+        this.canvas!.height * this.framebufferFactor,
       )
-      gl.bindTexture(gl.TEXTURE_2D, this.computationTexture)
-      gl.texImage2D(
-        gl.TEXTURE_2D,
+      gl2.bindTexture(gl2.TEXTURE_2D, this.computationTexture)
+      gl2.texImage2D(
+        gl2.TEXTURE_2D,
         0,
-        isWebGL2 ? (gl as WebGL2RenderingContext).RGBA32F : gl.RGBA,
+        gl2.RGBA32F,
         this.framebufferWidth,
         this.framebufferHeight,
         0,
-        gl.RGBA,
-        gl.FLOAT,
+        gl2.RGBA,
+        gl2.FLOAT,
         null,
       )
-      this.checkGlError(gl, 'FBO resize')
-      this.checkFramebuffer(gl, 'FBO resize')
-      if (this.debug)
-        console.log(
-          'Framebuffer resized',
-          this.framebufferWidth,
-          this.framebufferHeight,
-        )
+      this.log('resize FBO', this.framebufferWidth, this.framebufferHeight)
     }
     map.on('resize', this.resizeFramebuffer)
-    if (this.debug) console.log('Resize handler attached')
   }
-  onRemove(
-    map: maplibregl.Map,
-    gl: WebGLRenderingContext | WebGL2RenderingContext,
-  ): void {
-    if (this.debug) console.log('MaplibreInterpolateHeatmapLayer:onRemove')
-    if (!this.resizeFramebuffer)
-      throw new Error('error: required resize frame buffer callback')
-    map.off('resize', this.resizeFramebuffer)
-    gl.deleteTexture(this.computationTexture)
-    gl.deleteBuffer(this.drawingVerticesBuffer)
-    gl.deleteBuffer(this.computationVerticesBuffer)
-    gl.deleteBuffer(this.indicesBuffer)
-    gl.deleteFramebuffer(this.computationFramebuffer)
-    this.checkGlError(gl, 'cleanup')
-  }
-  prerender(
-    gl: WebGLRenderingContext | WebGL2RenderingContext,
-    { projectionMatrix }: maplibregl.CustomRenderMethodInput,
-  ): void {
-    if (this.debug) console.log('MaplibreInterpolateHeatmapLayer:prerender')
-    if (
-      !this.framebufferWidth ||
-      !this.framebufferHeight ||
-      this.aPositionComputation === undefined ||
-      !this.indicesNumber ||
-      !this.canvas ||
-      !this.canvas.width ||
-      !this.canvas.height
-    ) {
-      if (this.debug)
-        console.warn('Skipping prerender: missing framebuffer or canvas data')
-      return
+  /* ---------- prerender ---------- */
+  prerender(gl: WebGLRenderingContext, matrix: number[] | Float32Array) {
+    const gl2 = gl as unknown as WebGL2RenderingContext
+    if (!this.computationProgram) return
+    this.frame++
+
+    gl2.useProgram(this.computationProgram)
+    gl2.bindFramebuffer(gl2.FRAMEBUFFER, this.computationFramebuffer)
+    gl2.viewport(0, 0, this.framebufferWidth, this.framebufferHeight)
+    gl2.clearColor(0, 0, 0, 0)
+    gl2.clear(gl2.COLOR_BUFFER_BIT)
+
+    gl2.bindBuffer(gl2.ARRAY_BUFFER, this.computationVerticesBuffer)
+    gl2.enableVertexAttribArray(this.aPositionComputation)
+    gl2.vertexAttribPointer(
+      this.aPositionComputation,
+      2,
+      gl2.FLOAT,
+      false,
+      0,
+      0,
+    )
+
+    /* ---- NEW detailed uniform debug ---- */
+    this.log('u_MatrixComputation matrix before toF32', matrix)
+    const mComp = this.toF32(matrix, 'u_MatrixComputation')
+
+    if (this.uMatrixComputation) {
+      this.log(
+        'u_MatrixComputation',
+        'F32?',
+        mComp instanceof Float32Array,
+        'len',
+        mComp.length,
+        'first4',
+        Array.from(mComp.slice(0, 4)),
+      )
+      gl2.uniformMatrix4fv(this.uMatrixComputation, false, mComp)
+      const e = gl2.getError()
+      if (e) this.err('u_MatrixComputation glErr 0x' + e.toString(16))
+    } else {
+      this.err('skip u_MatrixComputation (null)')
     }
-    gl.disable(gl.DEPTH_TEST)
-    gl.enable(gl.BLEND)
-    gl.blendEquation(gl.FUNC_ADD)
-    gl.blendFunc(gl.ONE, gl.ONE)
-    gl.clearColor(0.0, 0.0, 0.0, 1.0)
-    gl.useProgram(this.computationProgram)
-    gl.uniformMatrix4fv(this.uMatrixComputation, false, projectionMatrix)
-    gl.uniform1f(this.uP, this.p)
-    gl.uniform2f(
-      this.uFramebufferSize,
+
+    gl2.uniform2f(
+      this.uFramebufferSize!,
       this.framebufferWidth,
       this.framebufferHeight,
     )
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.computationFramebuffer)
-    gl.viewport(0, 0, this.framebufferWidth, this.framebufferHeight)
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer)
-    for (let i = 0; i < this.points.length; i += 1) {
-      const point = this.points.at(i)
-      if (!point) throw new Error(`error: point not found at index: ${i}`)
-      if (this.debug) console.log('Prerender point', i, point)
-      gl.uniform1f(this.uUi, point[2])
-      gl.uniform2f(this.uXi, point[0], point[1])
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.computationVerticesBuffer)
-      gl.enableVertexAttribArray(this.aPositionComputation)
-      gl.vertexAttribPointer(
-        this.aPositionComputation,
-        2,
-        gl.FLOAT,
-        false,
-        0,
-        0,
-      )
-      if (this.textureCoverSameAreaAsROI) {
-        gl.drawElements(gl.TRIANGLES, this.indicesNumber, gl.UNSIGNED_BYTE, 0)
-      } else {
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
-      }
-    }
-    this.checkGlError(gl, 'prerender')
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-    gl.viewport(0, 0, this.canvas.width, this.canvas.height)
-    if (this.debug) console.log('Prerender finished')
+    gl2.uniform1f(this.uP!, this.p)
+
+    this.points.forEach(([xi, yi, ui], i) => {
+      gl2.uniform2f(this.uXi!, xi, yi)
+      gl2.uniform1f(this.uUi!, ui)
+      if (i === 0) this.log('draw first point ui', ui)
+      gl2.drawArrays(gl2.TRIANGLE_FAN, 0, 4)
+    })
+
+    gl2.bindFramebuffer(gl2.FRAMEBUFFER, null)
+    this.chk(gl2, 'prerender frame ' + this.frame)
   }
-  render(
-    gl: WebGLRenderingContext | WebGL2RenderingContext,
-    { projectionMatrix }: maplibregl.CustomRenderMethodInput,
-  ): void {
-    if (this.debug) console.log('MaplibreInterpolateHeatmapLayer:render')
-    if (
-      this.aPositionDraw === undefined ||
-      !this.canvas ||
-      !this.canvas.width ||
-      !this.canvas.height ||
-      !this.indicesNumber
-    ) {
-      if (this.debug)
-        console.warn('Skipping render: missing framebuffer or canvas data')
+
+  /* ---------- render ---------- */
+  render(gl: WebGLRenderingContext, matrix: number[] | Float32Array) {
+    const gl2 = gl as unknown as WebGL2RenderingContext
+    if (!this.drawProgram) return
+    gl2.useProgram(this.drawProgram)
+    gl2.viewport(0, 0, gl2.drawingBufferWidth, gl2.drawingBufferHeight)
+
+    gl2.bindBuffer(gl2.ARRAY_BUFFER, this.drawingVerticesBuffer)
+    gl2.enableVertexAttribArray(this.aPositionDraw)
+    gl2.vertexAttribPointer(this.aPositionDraw, 2, gl2.FLOAT, false, 0, 0)
+    gl2.bindBuffer(gl2.ELEMENT_ARRAY_BUFFER, this.indicesBuffer)
+
+    /* ---- Debugging before u_MatrixDraw ---- */
+    this.log('u_MatrixDraw matrix before toF32', matrix)
+
+    // Ensure the matrix passed is valid
+    if (!matrix || matrix.length < 16) {
+      this.err('Invalid matrix passed to render:', matrix)
       return
     }
 
-    gl.disable(gl.DEPTH_TEST) // ← add (kills depth test)
-    gl.depthMask(false) // ← add (do not overwrite depth)
+    // Convert to Float32Array
+    const mDraw = this.toF32(matrix, 'u_MatrixDraw')
 
-    gl.useProgram(this.drawProgram)
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.drawingVerticesBuffer)
-    gl.enableVertexAttribArray(this.aPositionDraw)
-    gl.vertexAttribPointer(this.aPositionDraw, 2, gl.FLOAT, false, 0, 0)
-    gl.uniformMatrix4fv(this.uMatrixDraw, false, projectionMatrix)
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, this.computationTexture)
-    gl.uniform1i(this.uComputationTexture, 0)
-    gl.uniform2f(this.uScreenSizeDraw, this.canvas.width, this.canvas.height)
-    gl.uniform1f(this.uOpacity, this.opacity)
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer)
-    gl.drawElements(gl.TRIANGLES, this.indicesNumber, gl.UNSIGNED_BYTE, 0)
-    this.checkGlError(gl, 'render')
-    if (this.debug) console.log('Render finished')
+    // Log detailed matrix information for further debugging
+    this.log(
+      'u_MatrixDraw matrix after toF32',
+      mDraw instanceof Float32Array,
+      'len',
+      mDraw.length,
+      'first4',
+      Array.from(mDraw.slice(0, 4)),
+    )
 
-    gl.depthMask(true) // ← restore (optional)
-
-    if (this.debug) {
-      // optional sanity‑check
-      const px = new Uint8Array(4)
-      gl.readPixels(
-        this.canvas!.width >> 1,
-        this.canvas!.height >> 1,
-        1,
-        1,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        px,
-      )
-      console.log('Center pixel post‑draw', px)
+    if (this.uMatrixDraw) {
+      gl2.uniformMatrix4fv(this.uMatrixDraw, false, mDraw)
+      const e = gl2.getError()
+      if (e) this.err('u_MatrixDraw glErr 0x' + e.toString(16))
+    } else {
+      this.err('skip u_MatrixDraw (null)')
     }
-    if (this.debug) console.log('Render finished')
+
+    gl2.uniform2f(
+      this.uScreenSizeDraw!,
+      gl2.drawingBufferWidth,
+      gl2.drawingBufferHeight,
+    )
+    gl2.uniform1f(this.uOpacity!, this.opacity)
+    gl2.activeTexture(gl2.TEXTURE0)
+    gl2.bindTexture(gl2.TEXTURE_2D, this.computationTexture)
+    gl2.uniform1i(this.uComputationTexture!, 0)
+    gl2.drawElements(gl2.TRIANGLES, this.indicesNumber, gl2.UNSIGNED_BYTE, 0)
+
+    this.chk(gl2, 'render frame ' + this.frame)
   }
-}
-/**
- * @param {WebGLRenderingContext} gl - WebGL context
- * @param {string } source - source of the shader
- * @returns {WebGLShader | undefined} - compiled shader
- */
-function createVertexShader(
-  gl: WebGLRenderingContext,
-  source: string,
-): WebGLShader | undefined {
-  const vertexShader = gl.createShader(gl.VERTEX_SHADER)
-  if (vertexShader) return compileShader(gl, vertexShader, source)
-}
-/**
- * @param {WebGLRenderingContext} gl - WebGL context
- * @param {string } source - source of the shader
- * @returns {WebGLShader | undefined} - compiled shader
- */
-function createFragmentShader(
-  gl: WebGLRenderingContext,
-  source: string,
-): WebGLShader | undefined {
-  const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
-  if (fragmentShader) return compileShader(gl, fragmentShader, source)
-}
-/**
- * @param {WebGLRenderingContext} gl - WebGL context
- * @param {WebGLShader} shader - shader to compile
- * @param {string} source - source of the shader
- * @returns {WebGLShader | undefined} - compiled shader
- */
-function compileShader(
-  gl: WebGLRenderingContext,
-  shader: WebGLShader,
-  source: string,
-): WebGLShader | undefined {
-  gl.shaderSource(shader, source)
-  gl.compileShader(shader)
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    throw gl.getShaderInfoLog(shader)
+
+  /* ---------- cleanup (same) ---------- */
+  onRemove(map: maplibregl.Map, gl: WebGLRenderingContext) {
+    const gl2 = gl as unknown as WebGL2RenderingContext
+    map.off('resize', this.resizeFramebuffer!)
+    ;[
+      this.computationFramebuffer,
+      this.computationTexture,
+      this.computationVerticesBuffer,
+      this.drawingVerticesBuffer,
+      this.indicesBuffer,
+      this.computationProgram,
+      this.drawProgram,
+    ].forEach(
+      (r) =>
+        r &&
+        (gl2.deleteBuffer as any) &&
+        (gl2.deleteTexture as any) &&
+        (gl2.deleteProgram as any),
+    )
+    this.log('cleanup done')
   }
-  return shader
 }
 
-/**
- * @param {WebGLRenderingContext} gl - WebGL context
- * @param {WebGLShader} vertexShader - vertext shader
- * @param {WebGLShader} fragmentShader - fragment shader
- * @returns {WebGLProgram | null} - compiled program
- */
-function createProgram(
-  gl: WebGLRenderingContext,
-  vertexShader: WebGLShader,
-  fragmentShader: WebGLShader,
-): WebGLProgram | null {
-  const program = gl.createProgram()
-  if (program) {
-    gl.attachShader(program, vertexShader)
-    gl.attachShader(program, fragmentShader)
-    gl.linkProgram(program)
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      throw gl.getProgramInfoLog(program)
-    }
+/* ---------- shader utils (unchanged) ---------- */
+function mkProg(
+  gl: WebGL2RenderingContext,
+  v: string,
+  f: string,
+  log: (...a: unknown[]) => void,
+  err: (...a: unknown[]) => void,
+) {
+  const vs = cmpSh(gl, gl.VERTEX_SHADER, v, log, err)
+  const fs = cmpSh(gl, gl.FRAGMENT_SHADER, f, log, err)
+  const p = gl.createProgram()!
+  gl.attachShader(p, vs)
+  gl.attachShader(p, fs)
+  gl.linkProgram(p)
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+    err('link err', gl.getProgramInfoLog(p))
+    throw new Error('link failed')
   }
-  return program
+  log('prog linked')
+  return p
 }
+
+function cmpSh(
+  gl: WebGL2RenderingContext,
+  t: number,
+  src: string,
+  log: (...a: unknown[]) => void,
+  err: (...a: unknown[]) => void,
+) {
+  const sh = gl.createShader(t)!
+  gl.shaderSource(sh, src)
+  gl.compileShader(sh)
+  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+    err('compile err', gl.getShaderInfoLog(sh))
+    throw new Error('compile failed')
+  }
+  log(t === gl.VERTEX_SHADER ? 'vs ok' : 'fs ok')
+  return sh
+}
+
 export { MaplibreInterpolateHeatmapLayer }

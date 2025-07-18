@@ -34,7 +34,7 @@
 <script>
     const $ = q => document.querySelector(q)
     const cv = $('#gl'), msg = $('#msg')
-    const gl = cv.getContext('webgl2', {premultipliedAlpha: false}) || alert('webgl2 required')
+    const gl = cv.getContext('webgl2', {premultipliedAlpha: false}) as WebGL2RenderingContext || alert('webgl2 required')
     cv.width = cv.clientWidth;
     cv.height = cv.clientHeight
     const W = cv.width, H = cv.height
