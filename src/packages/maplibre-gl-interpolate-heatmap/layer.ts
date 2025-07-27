@@ -1,5 +1,6 @@
 import earcut from 'earcut'
 import maplibregl, { CustomLayerInterface } from 'maplibre-gl'
+import { Program } from 'luma.gl'
 
 type Pt = { lat: number; lon: number; val: number }
 
@@ -500,36 +501,14 @@ function mkProg(
   log: (...a: unknown[]) => void,
   err: (...a: unknown[]) => void,
 ) {
-  const vs = cmpSh(gl, gl.VERTEX_SHADER, v, log, err)
-  const fs = cmpSh(gl, gl.FRAGMENT_SHADER, f, log, err)
-  const p = gl.createProgram()!
-  gl.attachShader(p, vs)
-  gl.attachShader(p, fs)
-  gl.linkProgram(p)
-  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
-    err('link err', gl.getProgramInfoLog(p))
-    throw new Error('link failed')
+  try {
+    const program = new Program(gl, { vs: v, fs: f })
+    log('prog linked via luma')
+    return program.handle as WebGLProgram
+  } catch (e) {
+    err('link err', e)
+    throw e
   }
-  log('prog linked')
-  return p
-}
-
-function cmpSh(
-  gl: WebGL2RenderingContext,
-  t: number,
-  src: string,
-  log: (...a: unknown[]) => void,
-  err: (...a: unknown[]) => void,
-) {
-  const sh = gl.createShader(t)!
-  gl.shaderSource(sh, src)
-  gl.compileShader(sh)
-  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
-    err('compile err', gl.getShaderInfoLog(sh))
-    throw new Error('compile failed')
-  }
-  log(t === gl.VERTEX_SHADER ? 'vs ok' : 'fs ok')
-  return sh
 }
 
 export { MaplibreInterpolateHeatmapLayer }
